@@ -90,7 +90,7 @@ contract MultiHonor_V1 is Initializable, IMultiHonor, AccessControlUpgradeable {
     }
 
     // returns user's POC at a specific time after checkpoint
-    function POC(uint256 tokenId, uint256 time) view external returns(uint64) {
+    function POC_at(uint256 tokenId, uint256 time) view external returns(uint64) {
         return uint64(uint256(pocInfo[tokenId].POC) - uint256(time - pocInfo[tokenId].timestamp) * k / k_denominator);
         // Non linear attenuation
         // return p / (time - (pocInfo[tokenId].POCTimestamp - p / pocInfo[tokenId].POC));
@@ -98,7 +98,7 @@ contract MultiHonor_V1 is Initializable, IMultiHonor, AccessControlUpgradeable {
 
     // returns user's current POC
     function POC(uint256 tokenId) override view external returns(uint64) {
-        return this.POC(tokenId, block.timestamp);
+        return this.POC_at(tokenId, block.timestamp);
     }
 
     // returns user's average VEPower in current epoch
