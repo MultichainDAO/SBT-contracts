@@ -23,10 +23,12 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
     uint256 public nextTokenId;
 
     string public _baseURI_;
+    string public defaultURI;
     address public honor;
 
     event InitV2();
 
+    event SetDefaultURI(string defaultURI);
     event SetBaseURI(string baseURI);
 
     event SetHonor(address honor);
@@ -47,14 +49,28 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
 
     /// @dev Initializes V2 settings.
     function initV2() public {
+        _setDefaultURI(
+            "ipfs://QmaVznKDucX1TyGZuhNrnmxmgMWfRXG6NW3QMg52mjvH1d/"
+        );
         _setBaseURI("ipfs://QmTYwELcSgghx32VMsSGgWFQvCAqZ5tg6kKaPh2MSJfwAj/");
         emit InitV2();
+    }
+
+    /// @dev Sets default URI.
+    function setDefaultURI(string memory defaultURI_) public {
+        _checkRole(ROLE_ADMIN);
+        _setDefaultURI(defaultURI_);
     }
 
     /// @dev Sets base URI.
     function setBaseURI(string memory baseURI) public {
         _checkRole(ROLE_ADMIN);
         _setBaseURI(baseURI);
+    }
+
+    function _setDefaultURI(string memory defaultURI_) internal {
+        defaultURI = defaultURI_;
+        emit SetDefaultURI(_baseURI_);
     }
 
     function _setBaseURI(string memory baseURI) internal {
@@ -110,7 +126,11 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
         returns (string memory output)
     {
         uint256 lvl = IMultiHonor(honor).Level(_tokenId);
-        output = string(abi.encodePacked(_baseURI_, toString(lvl)));
+        if (lvl == 0) {
+            output = defaultURI;
+        } else {
+            output = string(abi.encodePacked(_baseURI_, toString(lvl)));
+        }
     }
 
     function toString(uint256 value) internal pure returns (string memory) {

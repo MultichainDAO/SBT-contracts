@@ -9,7 +9,7 @@ contract BABT is ERC721EnumerableUpgradeable {
     }
 
     function burn(uint256 tokenId) external {
-        require(msg.sender == _ownerOf(tokenId));
+        require(msg.sender == ownerOf(tokenId));
         _burn(tokenId);
     }
 }

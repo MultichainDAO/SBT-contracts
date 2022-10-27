@@ -219,7 +219,7 @@ describe("IDNFT V2", function () {
     let tx3 = await controller.merge(tokenId1, tokenId0);
     let rc3 = await tx3.wait();
     expect(await idnft.balanceOf(owner.address)).to.equal(1);
-    let poc = await sbt.poc(tokenId0);
+    let poc = await sbt.POC(tokenId0);
     expect(poc).to.equal(300);
     expect(await sbt.EventPoint(tokenId0)).to.equal(700);
     expect(await sbt.EventPoint(tokenId1)).to.equal(0);
