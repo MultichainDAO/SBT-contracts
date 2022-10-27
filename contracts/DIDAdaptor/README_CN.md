@@ -1,8 +1,8 @@
 ### DID adaptor
-IDNFT 可以通过连接插入式的验证器成为 DAO 的认证用户。
-插入式验证器负责保存 IDNFT 和外部系统的账户的映射关系，
+IDNFT 可以通过插入式的适配器连接外部 DID provider，使 IDNFT 成为综合的 DID 系统。
+适配器负责保存 IDNFT 和外部 DID 的映射关系，
 controller 合约通过插入式验证器校验 IDNFT 的认证信息。
-可信任的外部验证器包括 BABT adaptor, Premium holder, While holder 等。
+可信任的外部 DID provider 包括 BABT, Premium holder, While holder 等。
 IDNFT controller 可以管理多种受信任的外部 DID 系统，
 连接了外部 DID 的 IDNFT holder 会被看作真实用户。
 #### 1. BABT adaptor
