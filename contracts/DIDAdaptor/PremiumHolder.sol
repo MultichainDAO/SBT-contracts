@@ -27,6 +27,7 @@ contract PremiumHolder is IDIDAdaptor {
     address public money;
     uint256 public immutable price;
     address public operator;
+    uint256 public totalBinding;
 
     mapping(uint256 => address) public premiumHolderOf; // idcard => premium holder
     mapping(address => uint256) public idcardOf; // premium holder => idcard
@@ -99,6 +100,7 @@ contract PremiumHolder is IDIDAdaptor {
             _pay(payer);
             premiumHolderOf[tokenId] = claimer;
             idcardOf[claimer] = tokenId;
+            totalBinding += 1;
             emit ConnectPayer(tokenId, claimer);
             return true;
         }
@@ -124,6 +126,7 @@ contract PremiumHolder is IDIDAdaptor {
         address premiumHolder = premiumHolderOf[tokenId];
         idcardOf[premiumHolder] = 0;
         premiumHolderOf[tokenId] = address(0);
+        totalBinding -= 1;
         emit DisconnectPayer(tokenId, premiumHolder);
         return true;
     }

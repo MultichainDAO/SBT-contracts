@@ -92,10 +92,10 @@ describe("IDNFT V2", function () {
     console.log("\nset caller permission");
     let func_merge = await controller.FuncMerge();
     console.log("func merge " + func_merge);
-    await controller.setCallerPermission(owner.address, func_merge, true);
+    await controller.setCallerPermission(owner.address, hre.network.config.chainId, func_merge, true);
     let func_register = await controller.FuncRegister();
     console.log("func register " + func_register);
-    await controller.setCallerPermission(owner.address, func_register, true);
+    await controller.setCallerPermission(owner.address, hre.network.config.chainId, func_register, true);
 
     // deploy babt
     console.log("\ndeploy babt");
@@ -284,7 +284,7 @@ describe("IDNFT V2", function () {
         [tokenId_1370, owner.address]
       )]
     );
-    await mc.receiveMessage(controller.address, owner.address, register_message);
+    await mc.receiveMessage(controller.address, owner.address, hre.network.config.chainId, register_message);
     console.log("balance " + await idnft.balanceOf(owner.address));
     console.log("1370 owner " + await idnft.ownerOf(tokenId_1370));
     expect(await idnft.ownerOf(tokenId_1370)).to.equal(owner.address);
@@ -301,7 +301,7 @@ describe("IDNFT V2", function () {
       )]
     );
     console.log("message merge 1 " + message_merge_1);
-    await mc.receiveMessage(controller.address, owner.address, message_merge_1);
+    await mc.receiveMessage(controller.address, owner.address, hre.network.config.chainId, message_merge_1);
     console.log("total supply " + await idnft.totalSupply());
     // 2. either token does not exist (31337000000001 -> 31337000000000, 31337000000000 -> 31337000000001)
     let message_merge_2 = ethers.utils.defaultAbiCoder.encode(
@@ -312,7 +312,7 @@ describe("IDNFT V2", function () {
       )]
     );
     console.log("message merge 2 " + message_merge_2);
-    await mc.receiveMessage(controller.address, owner.address, message_merge_2);
+    await mc.receiveMessage(controller.address, owner.address, hre.network.config.chainId, message_merge_2);
     console.log("total supply " + await idnft.totalSupply());
     let message_merge_3 = ethers.utils.defaultAbiCoder.encode(
       ["bytes4", "bytes"],
@@ -322,7 +322,7 @@ describe("IDNFT V2", function () {
       )]
     );
     console.log("message merge 3 " + message_merge_3);
-    await mc.receiveMessage(controller.address, owner.address, message_merge_3);
+    await mc.receiveMessage(controller.address, owner.address, hre.network.config.chainId, message_merge_3);
     console.log("total supply " + await idnft.totalSupply());
 
     // TODO test reuse DID after old ID card is burnt

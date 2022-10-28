@@ -27,6 +27,7 @@ contract WhiteHolder is IDIDAdaptor {
     address public controller;
     address public operator;
     bytes32 public currentRoot;
+    uint256 public totalBinding;
 
     mapping(uint256 => address) public whiteHolderOf; // idcard => white holder
     mapping(address => uint256) public idcardOf; // white holder => idcard
@@ -62,6 +63,7 @@ contract WhiteHolder is IDIDAdaptor {
             }
             if (verify(claimer, sign_info)) {
                 idcardOf[claimer] = tokenId;
+                totalBinding += 1;
                 return true;
             }
         }
@@ -74,6 +76,7 @@ contract WhiteHolder is IDIDAdaptor {
         address whiteHolder = whiteHolderOf[tokenId];
         idcardOf[whiteHolder] = 0;
         whiteHolderOf[tokenId] = address(0);
+        totalBinding -= 1;
         emit DisconnectPayer(tokenId, whiteHolder);
         return true;
     }

@@ -18,6 +18,7 @@ contract BABTAdaptor is IDIDAdaptor {
     address public idcard;
     address public controller;
     address public babt;
+    uint256 public totalBinding;
 
     mapping(uint256 => uint256) public babtOf; // idcard => binance sbt
     mapping(uint256 => uint256) public idcardOf; // babt id => idcard
@@ -56,6 +57,7 @@ contract BABTAdaptor is IDIDAdaptor {
             }
             idcardOf[babtId] = tokenId;
             babtOf[tokenId] = babtId;
+            totalBinding += 1;
             emit ConnectBABT(tokenId, babtId);
             return true;
         }
@@ -67,6 +69,7 @@ contract BABTAdaptor is IDIDAdaptor {
         uint256 babtId = babtOf[tokenId];
         idcardOf[babtId] = 0;
         babtOf[tokenId] = 0;
+        totalBinding -= 1;
         emit DisconnectBABT(tokenId, babtId);
         return true;
     }

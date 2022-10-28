@@ -6,17 +6,20 @@ interface IMessageChannel {
 }
 
 interface IClient {
-    function onReceiveMessage(address caller, bytes memory message)
-        external
-        virtual;
+    function onReceiveMessage(
+        address caller,
+        uint256 fromChainID,
+        bytes memory message
+    ) external virtual;
 }
 
 abstract contract MessageChannelBase is IMessageChannel {
     function onReceive(
         address client,
         address caller,
+        uint256 fromChainID,
         bytes memory message
     ) internal {
-        IClient(client).onReceiveMessage(caller, message);
+        IClient(client).onReceiveMessage(caller, fromChainID, message);
     }
 }

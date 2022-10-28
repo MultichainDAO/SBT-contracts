@@ -12,8 +12,9 @@ contract PseudoMessageChannel is MessageChannelBase {
     function receiveMessage(
         address client,
         address caller,
+        uint256 fromChainID,
         bytes memory message
     ) external {
-        onReceive(client, caller, message);
+        onReceive(client, caller, fromChainID, message);
     }
 }

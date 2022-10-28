@@ -68,7 +68,8 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
     address public messageChannel;
     /// @dev Peer chains.
     uint256[] public chains;
-    mapping(address => mapping(bytes4 => bool)) public callerPermission; // caller -> function -> allowed
+    mapping(address => mapping(uint256 => mapping(bytes4 => bool)))
+        public callerPermission; // caller -> function -> allowed
     bytes4 public constant FuncMerge = bytes4(keccak256("merge"));
     bytes4 public constant FuncRegister = bytes4(keccak256("register"));
 
@@ -88,7 +89,12 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
 
     event SetMessageChannel(address messageChannel);
     event SetChains(uint256[] chains);
-    event SetCallerPermission(address caller, bytes4 func, bool allow);
+    event SetCallerPermission(
+        address caller,
+        uint256 fromChainID,
+        bytes4 func,
+        bool allow
+    );
 
     event SetDIDAdaptor(string key, bytes32 hashkey, address adaptor);
 
@@ -172,12 +178,13 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
     /// @dev Sets remote caller's permission.
     function setCallerPermission(
         address caller,
+        uint256 fromChainID,
         bytes4 func,
         bool allow
     ) external {
         _checkRole(ROLE_ADMIN);
-        callerPermission[caller][func] = allow;
-        emit SetCallerPermission(caller, func, allow);
+        callerPermission[caller][fromChainID][func] = allow;
+        emit SetCallerPermission(caller, fromChainID, func, allow);
     }
 
     /// @dev Sets DID adaptor address.
@@ -223,19 +230,20 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
     }
 
     /// @dev Dispatches message to different functions.
-    function onReceiveMessage(address caller, bytes memory message)
-        external
-        mustInitialized
-    {
+    function onReceiveMessage(
+        address caller,
+        uint256 fromChainID,
+        bytes memory message
+    ) external mustInitialized {
         _checkRole(ROLE_MESSAGE);
         (bytes4 func, bytes memory args) = abi.decode(message, (bytes4, bytes));
         if (func == FuncMerge) {
-            require(callerPermission[caller][FuncMerge]);
+            require(callerPermission[caller][fromChainID][FuncMerge]);
             onMergeMessage(args);
             return;
         }
         if (func == FuncRegister) {
-            require(callerPermission[caller][FuncRegister]);
+            require(callerPermission[caller][fromChainID][FuncRegister]);
             onRegisterMessage(args);
             return;
         }

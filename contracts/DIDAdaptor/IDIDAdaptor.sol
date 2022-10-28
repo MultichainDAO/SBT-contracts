@@ -20,4 +20,6 @@ interface IDIDAdaptor {
         returns (bool);
 
     function disconnect(uint256 tokenId) external virtual returns (bool);
+
+    function totalBinding() external returns (uint256);
 }
