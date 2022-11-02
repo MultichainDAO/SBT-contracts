@@ -26,6 +26,8 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
     string public defaultURI;
     address public honor;
 
+    bool public v2_initialized;
+
     event InitV2();
 
     event SetDefaultURI(string defaultURI);
@@ -49,6 +51,10 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
 
     /// @dev Initializes V2 settings.
     function initV2() public {
+        require(!v2_initialized);
+        v2_initialized = true;
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(ROLE_ADMIN, msg.sender);
         _setDefaultURI(
             "ipfs://QmaVznKDucX1TyGZuhNrnmxmgMWfRXG6NW3QMg52mjvH1d/"
         );

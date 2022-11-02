@@ -289,6 +289,7 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
         require(accountTypeOf[tokenId] == bytes32(0));
         if (accountType == AccountType_Default) {
             res = true;
+            return res;
         }
         res = IDIDAdaptor(dIDAdaptor[accountType]).connect(
             tokenId,
@@ -310,6 +311,15 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
             return false;
         }
         return IDIDAdaptor(dIDAdaptor[accountType]).verifyAccount(tokenId);
+    }
+
+    /// @dev Connect to DID.
+    function connect(
+        uint256 tokenId,
+        bytes32 newAccountType,
+        bytes memory new_sign_info
+    ) public {
+        _connect(tokenId, newAccountType, new_sign_info);
     }
 
     /// @dev Update idcard's DID.
