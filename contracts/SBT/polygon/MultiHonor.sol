@@ -46,7 +46,6 @@ contract MultiHonor_Multichain is
     }
 
     address public IDCard;
-    address public controller;
     bytes32 public constant ROLE_ADD_POC = keccak256("ROLE_ADD_POC");
     bytes32 public constant ROLE_SET_POC = keccak256("ROLE_SET_POC");
     bytes32 public constant ROLE_SET_VEPOWER = keccak256("ROLE_SET_VEPOWER");
@@ -74,6 +73,11 @@ contract MultiHonor_Multichain is
     event AddEventPoint(uint256[] ids, uint64[] eventPower);
     event SetIDCard(address idcard);
     event SetController(address controller);
+
+    function resetSBT() external {
+        // reset SBT params
+        __initSBT();
+    }
 
     function __initSBT() internal {
         weight_poc = 600;
@@ -114,6 +118,8 @@ contract MultiHonor_Multichain is
 
     event Merge(uint256 fromToken, uint256 toToken);
 
+    address public controller;
+
     function merge(uint256 fromToken, uint256 toToken) external override {
         require(msg.sender == controller);
         // Merge POC
@@ -140,7 +146,11 @@ contract MultiHonor_Multichain is
     }
 
     // returns user's POC at a specific time after checkpoint
-    function POC_at(uint256 tokenId, uint256 time) external view returns (uint64) {
+    function POC_at(uint256 tokenId, uint256 time)
+        external
+        view
+        returns (uint64)
+    {
         return
             uint64(
                 uint256(pocInfo[tokenId].POC) -

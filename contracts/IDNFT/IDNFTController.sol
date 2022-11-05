@@ -16,7 +16,11 @@ interface ILedger {
  * @dev Interface of crosschain message channel.
  */
 interface IMessageChannel {
-    function send(uint256 toChainID, bytes memory message) external virtual;
+    function send(
+        uint256 toChainID,
+        address to,
+        bytes memory message
+    ) external virtual;
 }
 
 /**
@@ -68,8 +72,7 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
     address public messageChannel;
     /// @dev Peer chains.
     uint256[] public chains;
-    mapping(address => mapping(uint256 => mapping(bytes4 => bool)))
-        public callerPermission; // caller -> function -> allowed
+    mapping(uint256 => address) public peer;
     bytes4 public constant FuncMerge = bytes4(keccak256("merge"));
     bytes4 public constant FuncRegister = bytes4(keccak256("register"));
 
@@ -89,12 +92,7 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
 
     event SetMessageChannel(address messageChannel);
     event SetChains(uint256[] chains);
-    event SetCallerPermission(
-        address caller,
-        uint256 fromChainID,
-        bytes4 func,
-        bool allow
-    );
+    event SetPeer(address peer, uint256 ChainID);
 
     event SetDIDAdaptor(string key, bytes32 hashkey, address adaptor);
 
@@ -176,15 +174,10 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
     }
 
     /// @dev Sets remote caller's permission.
-    function setCallerPermission(
-        address caller,
-        uint256 fromChainID,
-        bytes4 func,
-        bool allow
-    ) external {
+    function setPeer(address peer_, uint256 chainID) external {
         _checkRole(ROLE_ADMIN);
-        callerPermission[caller][fromChainID][func] = allow;
-        emit SetCallerPermission(caller, fromChainID, func, allow);
+        peer[chainID] = peer_;
+        emit SetPeer(peer_, chainID);
     }
 
     /// @dev Sets DID adaptor address.
@@ -238,12 +231,12 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
         _checkRole(ROLE_MESSAGE);
         (bytes4 func, bytes memory args) = abi.decode(message, (bytes4, bytes));
         if (func == FuncMerge) {
-            require(callerPermission[caller][fromChainID][FuncMerge]);
+            require(caller == peer[fromChainID]);
             onMergeMessage(args);
             return;
         }
         if (func == FuncRegister) {
-            require(callerPermission[caller][fromChainID][FuncRegister]);
+            require(caller == peer[fromChainID]);
             onRegisterMessage(args);
             return;
         }
@@ -365,7 +358,11 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
         bytes memory args = abi.encode(fromToken, toToken);
         bytes memory message = abi.encode(FuncMerge, args);
         for (uint256 i = 0; i < chains.length; i++) {
-            IMessageChannel(messageChannel).send(chains[i], message);
+            IMessageChannel(messageChannel).send(
+                chains[i],
+                peer[chains[i]],
+                message
+            );
         }
         emit MergeLocal(fromToken, toToken);
     }
@@ -410,7 +407,11 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
         bytes memory args = abi.encode(tokenId, receiverWallet);
         bytes memory message = abi.encode(FuncRegister, args);
         for (uint256 i = 0; i < toChainIDs.length; i++) {
-            IMessageChannel(messageChannel).send(chains[i], message);
+            IMessageChannel(messageChannel).send(
+                chains[i],
+                peer[chains[i]],
+                message
+            );
         }
         emit RegisterRequest(tokenId, toChainIDs, receiverWallet);
     }

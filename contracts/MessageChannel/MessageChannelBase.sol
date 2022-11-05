@@ -2,7 +2,11 @@
 pragma solidity ^0.8.0;
 
 interface IMessageChannel {
-    function send(uint256 toChainID, bytes memory message) external virtual;
+    function send(
+        uint256 toChainID,
+        address to,
+        bytes memory message
+    ) external virtual;
 }
 
 interface IClient {

@@ -92,10 +92,10 @@ describe("IDNFT V2", function () {
     console.log("\nset caller permission");
     let func_merge = await controller.FuncMerge();
     console.log("func merge " + func_merge);
-    await controller.setCallerPermission(owner.address, hre.network.config.chainId, func_merge, true);
+    await controller.setPeer(owner.address, hre.network.config.chainId);
     let func_register = await controller.FuncRegister();
     console.log("func register " + func_register);
-    await controller.setCallerPermission(owner.address, hre.network.config.chainId, func_register, true);
+    await controller.setPeer(owner.address, hre.network.config.chainId);
 
     // deploy babt
     console.log("\ndeploy babt");
@@ -228,18 +228,18 @@ describe("IDNFT V2", function () {
 
     // check log: sending merge message
     console.log("\ncheck log: sending merge message");
-    let topic_send = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("Send(uint256,bytes)"));
+    let topic_send = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("Send(uint256,address,bytes)"));
     console.log("topic send " + topic_send);
     const event3 = rc3.events.find(event => event.address === mc.address);
 
     const [topic_0] = event3.topics;
     expect(topic_0).to.equal(topic_send);
 
-    var abi = ["event Send(uint256 toChainID, bytes message)"];
+    var abi = ["event Send(uint256 toChainID, address to, bytes message)"];
     var iface = new ethers.utils.Interface(abi);
     let event_send = iface.parseLog(event3);
 
-    let [toChainID, message] = event_send.args;
+    let [toChainID, , message] = event_send.args;
     expect(toChainID).to.equal(627);
     console.log("merge message " + message);
     expect(message).to.equal(
@@ -261,7 +261,7 @@ describe("IDNFT V2", function () {
     let event4 = rc4.events.find(event => event.address === mc.address);
     let event_register_request_message = iface.parseLog(event4);
 
-    let [toChainID2, register_request_message] = event_register_request_message.args;
+    let [toChainID2, , register_request_message] = event_register_request_message.args;
     expect(toChainID2).to.equal(627);
     console.log("register message " + register_request_message);
     expect(register_request_message).to.equal(

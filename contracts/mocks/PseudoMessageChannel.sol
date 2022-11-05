@@ -3,10 +3,14 @@ pragma solidity ^0.8.0;
 import "../MessageChannel/MessageChannelBase.sol";
 
 contract PseudoMessageChannel is MessageChannelBase {
-    event Send(uint256 toChainID, bytes message);
+    event Send(uint256 toChainID, address to, bytes message);
 
-    function send(uint256 toChainID, bytes memory message) external override {
-        emit Send(toChainID, message);
+    function send(
+        uint256 toChainID,
+        address to,
+        bytes memory message
+    ) external override {
+        emit Send(toChainID, to, message);
     }
 
     function receiveMessage(
