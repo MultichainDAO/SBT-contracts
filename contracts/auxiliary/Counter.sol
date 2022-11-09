@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-abstract contract Counter {
+abstract contract Accumulator {
     struct Chunk {
         uint256 fromTokenId;
         uint256 toTokenId;
@@ -18,7 +18,7 @@ abstract contract Counter {
         view
         returns (uint256 result)
     {
-        for (uint256 i = fromTokenId; i <= toTokenId; i++) {
+        for (uint256 i = fromTokenId; i < toTokenId; i++) {
             try this.getOne(i) returns (uint256 result_i) {
                 result += result_i;
             } catch {
@@ -64,7 +64,7 @@ interface ISBT {
     function Level(uint256 tokenId) external view returns (uint8);
 }
 
-contract Non_Trivial_Counter is Counter {
+contract Non_Trivial_Accumulator is Accumulator {
     address public sbt;
 
     constructor(address sbt_) {
@@ -76,5 +76,17 @@ contract Non_Trivial_Counter is Counter {
             return 1;
         }
         return 0;
+    }
+}
+
+contract Total_Point_Accumulator is Accumulator {
+    address public sbt;
+
+    constructor(address sbt_) {
+        sbt = sbt_;
+    }
+
+    function getOne(uint256 tokenId) external view override returns (uint256) {
+        return uint256(ISBT(sbt).TotalPoint(tokenId));
     }
 }
