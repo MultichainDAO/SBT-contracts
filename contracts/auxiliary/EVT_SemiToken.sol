@@ -132,7 +132,7 @@ contract EVT_SemiToken is IERC20 {
         uint256 amount
     ) external returns (bool) {
         require(cap[issuer] >= amount, "transfer not allowed");
-        _allowance[msg.sender][issuer] -= amount;
+        _allowance[issuer][msg.sender] -= amount;
         cap[issuer] -= amount;
         uint256 tokenId = IERC721Enumerable(idcard).tokenOfOwnerByIndex(to, 0);
         uint256[] memory ids = new uint256[](1);

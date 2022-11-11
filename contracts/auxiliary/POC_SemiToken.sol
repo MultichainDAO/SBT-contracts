@@ -3,12 +3,25 @@ pragma solidity ^0.8.0;
 
 interface IERC20 {
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
+
     function totalSupply() external view returns (uint256);
+
     function balanceOf(address account) external view returns (uint256);
+
     function transfer(address to, uint256 amount) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
+
+    function allowance(address owner, address spender)
+        external
+        view
+        returns (uint256);
+
     function approve(address spender, uint256 amount) external returns (bool);
+
     function transferFrom(
         address from,
         address to,
@@ -17,17 +30,26 @@ interface IERC20 {
 }
 
 interface IMultiHonor {
-    function POC(uint256 tokenId) view external returns(uint64);
-    function VEPower(uint256 tokenId) view external returns(uint256);
-    function VEPoint(uint256 tokenId) view external returns(uint64);
-    function EventPoint(uint256 tokenId) view external returns(uint64);
-    function TotalPoint(uint256 tokenId) view external returns(uint64); 
-    function Level(uint256 tokenId) view external returns(uint8);
+    function POC(uint256 tokenId) external view returns (uint64);
+
+    function VEPower(uint256 tokenId) external view returns (uint256);
+
+    function VEPoint(uint256 tokenId) external view returns (uint64);
+
+    function EventPoint(uint256 tokenId) external view returns (uint64);
+
+    function TotalPoint(uint256 tokenId) external view returns (uint64);
+
+    function Level(uint256 tokenId) external view returns (uint8);
+
     function addPOC(uint256[] calldata ids, uint64[] calldata poc) external;
 }
 
 interface IERC721Enumerable {
-    function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256);
+    function tokenOfOwnerByIndex(address owner, uint256 index)
+        external
+        view
+        returns (uint256);
 }
 
 contract POC_SemiToken is IERC20 {
@@ -41,7 +63,7 @@ contract POC_SemiToken is IERC20 {
     string public symbol = "POCST";
     uint8 public decimals = 0;
 
-    modifier onlyOwner {
+    modifier onlyOwner() {
         require(msg.sender == owner);
         _;
     }
@@ -61,7 +83,7 @@ contract POC_SemiToken is IERC20 {
     mapping(address => uint256) public cap;
     mapping(address => mapping(address => uint256)) public _allowance;
 
-    constructor (address idcard_, address honor_) {
+    constructor(address idcard_, address honor_) {
         owner = msg.sender;
         idcard = idcard_;
         honor = honor_;
@@ -76,7 +98,10 @@ contract POC_SemiToken is IERC20 {
         if (cap[account] > 0) {
             return cap[account];
         }
-        uint256 tokenId = IERC721Enumerable(idcard).tokenOfOwnerByIndex(account, 0);
+        uint256 tokenId = IERC721Enumerable(idcard).tokenOfOwnerByIndex(
+            account,
+            0
+        );
         return IMultiHonor(honor).POC(tokenId);
     }
 
@@ -106,7 +131,7 @@ contract POC_SemiToken is IERC20 {
         uint256 amount
     ) external returns (bool) {
         require(cap[issuer] >= amount, "transfer not allowed");
-        _allowance[msg.sender][issuer] -= amount;
+        _allowance[issuer][msg.sender] -= amount;
         cap[issuer] -= amount;
         uint256 tokenId = IERC721Enumerable(idcard).tokenOfOwnerByIndex(to, 0);
         uint256[] memory ids = new uint256[](1);
@@ -120,7 +145,11 @@ contract POC_SemiToken is IERC20 {
     }
 
     // issuer's allowance to spender
-    function allowance(address issuer, address spender) external view returns (uint256) {
+    function allowance(address issuer, address spender)
+        external
+        view
+        returns (uint256)
+    {
         return _allowance[issuer][spender];
     }
 

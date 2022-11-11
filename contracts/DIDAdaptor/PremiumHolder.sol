@@ -117,7 +117,7 @@ contract PremiumHolder is IDIDAdaptor {
         return nonceOf[payer];
     }
 
-    function updateNonce(address payer) public {
+    function updateNonce(address payer) internal {
         nonceOf[payer] = keccak256(
             abi.encodePacked("payer's nonce", nonceOf[payer])
         );

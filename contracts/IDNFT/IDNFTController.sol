@@ -404,6 +404,7 @@ contract IDCard_V2_Controller is AccessControlUpgradeable {
         uint256[] calldata toChainIDs,
         address receiverWallet
     ) external mustInitialized {
+        require(msg.sender == INFT(idnft).ownerOf(tokenId));
         bytes memory args = abi.encode(tokenId, receiverWallet);
         bytes memory message = abi.encode(FuncRegister, args);
         for (uint256 i = 0; i < toChainIDs.length; i++) {

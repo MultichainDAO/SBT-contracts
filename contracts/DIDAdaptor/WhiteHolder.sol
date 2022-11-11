@@ -63,6 +63,7 @@ contract WhiteHolder is IDIDAdaptor {
             }
             if (verify(claimer, sign_info)) {
                 idcardOf[claimer] = tokenId;
+                whiteHolderOf[tokenId] = claimer;
                 totalBinding += 1;
                 return true;
             }

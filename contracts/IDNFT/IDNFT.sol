@@ -16,6 +16,7 @@ interface IMultiHonor {
  * ID card NFT is a collection of crosschain composable DID NFT.
  */
 contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
+    /// @dev field order matters, always add new fields at the bottom
     bytes32 public constant ROLE_ADMIN = keccak256("ROLE_ADMIN");
     bytes32 public constant ROLE_CONTROLLER = keccak256("ROLE_CONTROLLER");
 
@@ -27,6 +28,7 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
     address public honor;
 
     bool public v2_initialized;
+    address public controller;
 
     event InitV2();
 
@@ -37,6 +39,7 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
 
     event AllowTransfer(uint256 tokenId);
     event ForbidTransfer(uint256 tokenId);
+    event SetController(address controller);
 
     function initialize() public initializer {
         __Context_init_unchained();
@@ -89,6 +92,13 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
         _checkRole(ROLE_ADMIN);
         honor = honor_;
         emit SetHonor(honor);
+    }
+
+    /// @dev Sets controller address.
+    function setController(address controller_) external {
+        _checkRole(ROLE_ADMIN);
+        controller = controller_;
+        emit SetController(controller);
     }
 
     /// @dev Returns birth chain of the IDCard.
@@ -168,5 +178,19 @@ contract IDCard_V2 is ERC721EnumerableUpgradeable, AccessControlUpgradeable {
         returns (bool)
     {
         return false;
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override {
+        require(!IDCard_V2_Controller(controller).verifyAccount(tokenId));
+        try IDCard_V2_Controller(controller).verifyAccount(tokenId) returns (
+            bool connected
+        ) {
+            require(!connected, "IDNFT: must disconnected DID before transfer");
+        } catch {}
+        super._transfer(from, to, tokenId);
     }
 }
