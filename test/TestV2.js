@@ -106,8 +106,17 @@ describe("IDNFT V2", function () {
     // deploy BABT adaptor
     console.log("\ndeploy BABT adaptor");
     let BABTAdaptor = await ethers.getContractFactory("BABTAdaptor");
-    let babtAdaptor = await BABTAdaptor.deploy(idnft.address, controller.address, babt.address);
-    console.log("BABT adaptor " + babtAdaptor.address);
+    let babtAdaptor_logic = await BABTAdaptor.deploy();
+    console.log("babtAdaptor_logic " + babtAdaptor_logic.address);
+
+    let babtAdaptor_proxy = await Proxy.deploy(babtAdaptor_logic.address, proxyAdmin.address, initdata);
+    await babtAdaptor_proxy.deployed();
+    console.log("babtAdaptor_proxy " + babtAdaptor_proxy.address);
+
+    let babtAdaptor = await ethers.getContractAt("BABTAdaptor", babtAdaptor_proxy.address);
+    console.log("babtAdaptor " + babtAdaptor.address);
+
+    await babtAdaptor.initAdaptor(idnft.address, controller.address, babt.address);
 
     // register BABT adaptor
     console.log("\nregister BABT adaptor");
@@ -332,7 +341,6 @@ describe("IDNFT V2", function () {
 
     // TODO test reuse DID after old ID card is burnt
 
-    // TODO test premium holder
     console.log("\ndeploy premium adaptor");
 
     let ERC20 = await ethers.getContractFactory("ERC20");
@@ -341,17 +349,25 @@ describe("IDNFT V2", function () {
     console.log(`money is deployed on ${money.address}`);
 
     let Adaptor = await ethers.getContractFactory("PremiumHolder");
-    let adaptor = await Adaptor.deploy(idnft.address, controller.address, money.address, 1);
-    await adaptor.deployed();
-    console.log(`adaptor is deployed on ${adaptor.address}`);
+    let premiumAdaptor_logic = await Adaptor.deploy();
+    await premiumAdaptor_logic.deployed();
+    console.log(`premiumAdaptor_logic is deployed on ${premiumAdaptor_logic.address}`);
 
-    let tx6 = await controller.setDIDAdaptor("Premium", adaptor.address);
+    let premiumAdaptor_proxy = await Proxy.deploy(premiumAdaptor_logic.address, proxyAdmin.address, initdata);
+    await premiumAdaptor_proxy.deployed();
+    console.log("premiumAdaptor_proxy " + premiumAdaptor_proxy.address);
+    let premiumAdaptor = await ethers.getContractAt("PremiumHolder", premiumAdaptor_proxy.address);
+    console.log("premiumAdaptor " + premiumAdaptor.address);
+
+    await premiumAdaptor.initAdaptor(idnft.address, controller.address, money.address, 1);
+
+    let tx6 = await controller.setDIDAdaptor("Premium", premiumAdaptor.address);
     await tx6.wait();
 
-    let tx7 = await money.approve(adaptor.address, 100);
+    let tx7 = await money.approve(premiumAdaptor.address, 100);
     await tx7.wait();
 
-    let type_paid = await adaptor.AccountType_PAID();
+    let type_paid = await premiumAdaptor.AccountType_PAID();
     console.log(`type_paid : ${type_paid}`);
     let tx8 = await controller.claim(type_paid, '0x');
     let rc8 = await tx8.wait();

@@ -21,7 +21,7 @@ interface IERC20 {
 /**
  * VERIFY WHITELISTED ID CARD HOLDER.
  */
-contract WhiteHolder is IDIDAdaptor {
+contract WhiteHolder is IDIDAdaptorOwned {
     bytes32 constant AccountType_White = keccak256("White");
     address public idcard;
     address public controller;
@@ -39,7 +39,8 @@ contract WhiteHolder is IDIDAdaptor {
     event TransferOperator(address to);
     event CommitRoot(bytes32 root);
 
-    constructor(address idcard_, address controller_) {
+    function initAdaptor(address idcard_, address controller_) public {
+        require(msg.sender == owner);
         idcard = idcard_;
         controller = controller_;
         operator = msg.sender;
@@ -55,16 +56,20 @@ contract WhiteHolder is IDIDAdaptor {
     ) public override returns (bool) {
         require(msg.sender == controller);
         if (accountType == AccountType_White) {
+            uint256 dTotalBinding = 1;
             if (
                 idcardOf[claimer] != 0 &&
                 IDCard(idcard).exists(idcardOf[claimer])
             ) {
-                return false;
+                if (verifyAccount(idcardOf[claimer])) {
+                    return false;
+                }
+                dTotalBinding -= 1;
             }
             if (verify(claimer, sign_info)) {
                 idcardOf[claimer] = tokenId;
                 whiteHolderOf[tokenId] = claimer;
-                totalBinding += 1;
+                totalBinding += dTotalBinding;
                 return true;
             }
         }
@@ -74,6 +79,10 @@ contract WhiteHolder is IDIDAdaptor {
     /// @notice Disconnect ID card from a white holder address.
     function disconnect(uint256 tokenId) external override returns (bool) {
         require(msg.sender == controller);
+        return _disconnect(tokenId);
+    }
+
+    function _disconnect(uint256 tokenId) internal returns (bool) {
         address whiteHolder = whiteHolderOf[tokenId];
         idcardOf[whiteHolder] = 0;
         whiteHolderOf[tokenId] = address(0);

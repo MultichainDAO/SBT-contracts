@@ -33,18 +33,3 @@ The first supported DID system is BABT.
 
 Upper-layer applications (like SBT and reward distributor) can retrieve underlying DID
 information of ID NFTs in the controller contract and the adaptor contract.
-
-### Mergeable
-
-### Ledgers
-Upper layer applications will get registered in the controller as ledgers and
-provide a hook function `merge`. The controller will call `merge` when two ID
-NFTs merge into one and let upper-layer applications check their status and
-keep consistent.
-
-The SBT contract is registered as a ledger. It will clear SBT points of one ID
-NFT and add to another when merging two ID NFTs.
-
-## SBT
-### Hierarchically controllable
-### Mergeable

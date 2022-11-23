@@ -23,3 +23,22 @@ interface IDIDAdaptor {
 
     function totalBinding() external returns (uint256);
 }
+
+abstract contract IDIDAdaptorOwned is IDIDAdaptor {
+    address public owner;
+    bool initialized;
+
+    event TransferOwner(address owner);
+
+    function initialize() public {
+        require(initialized == false);
+        owner = msg.sender;
+        initialized = true;
+    }
+
+    function transferOwner(address to) public {
+        require(msg.sender == owner);
+        owner = to;
+        emit TransferOwner(owner);
+    }
+}
